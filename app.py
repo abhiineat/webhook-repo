@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from pymongo import MongoClient
 from datetime import datetime
 import os
@@ -53,6 +53,9 @@ def webhook():
         collection.insert_one(data)
 
     return jsonify({"status": "ok"}), 200
+@app.route("/ui")
+def ui():
+    return send_from_directory("ui", "index.html")
 
 @app.route("/events", methods=["GET"])
 def events():

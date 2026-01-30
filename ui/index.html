@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GitHub Activity Feed</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+    }
+    .event {
+      background: #fff;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .timestamp {
+      color: #6b7280;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <h1>GitHub Repository Activity</h1>
+  <div class="container" id="events"></div>
+
+  <script>
+    const container = document.getElementById("events");
+
+    function formatDate(iso) {
+      const date = new Date(iso);
+      return date.toUTCString().replace("GMT", "UTC");
+    }
+
+    function renderEvent(e) {
+      if (e.action === "PUSH") {
+        return `${e.author} pushed to <b>${e.to_branch}</b> on ${formatDate(e.timestamp)}`;
+      }
+
+      if (e.action === "PULL_REQUEST") {
+        return `${e.author} submitted a pull request from <b>${e.from_branch}</b> to <b>${e.to_branch}</b> on ${formatDate(e.timestamp)}`;
+      }
+
+      if (e.action === "MERGE") {
+        return `${e.author} merged branch <b>${e.from_branch}</b> to <b>${e.to_branch}</b> on ${formatDate(e.timestamp)}`;
+      }
+
+      return "";
+    }
+
+    async function fetchEvents() {
+      const res = await fetch("/events");
+      const data = await res.json();
+
+      container.innerHTML = "";
+
+      data.forEach(e => {
+        const div = document.createElement("div");
+        div.className = "event";
+        div.innerHTML = `
+          <div>${renderEvent(e)}</div>
+          <div class="timestamp">${formatDate(e.timestamp)}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    fetchEvents();
+    setInterval(fetchEvents, 15000);
+  </script>
+</body>
+</html>
